@@ -20,6 +20,7 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
+import lk.ac.mrt.cse.dbs.simpleexpensemanager.control.DataSource;
 import lk.ac.mrt.cse.dbs.simpleexpensemanager.data.TransactionDAO;
 import lk.ac.mrt.cse.dbs.simpleexpensemanager.data.model.ExpenseType;
 import lk.ac.mrt.cse.dbs.simpleexpensemanager.data.model.Transaction;
@@ -28,17 +29,21 @@ import lk.ac.mrt.cse.dbs.simpleexpensemanager.data.model.Transaction;
  * This is an In-Memory implementation of TransactionDAO interface. This is not a persistent storage. All the
  * transaction logs are stored in a LinkedList in memory.
  */
-public class InMemoryTransactionDAO implements TransactionDAO {
+public class PersistentTransactionDAO implements TransactionDAO {
     private final List<Transaction> transactions;
+    private final DataSource dataSource;
 
-    public InMemoryTransactionDAO() {
+    public PersistentTransactionDAO(DataSource dataSource) {
+        this.dataSource = dataSource;
         transactions = new LinkedList<>();
+        transactions.addAll(dataSource.getTransactions());
     }
 
     @Override
     public void logTransaction(Date date, String accountNo, ExpenseType expenseType, double amount) {
         Transaction transaction = new Transaction(date, accountNo, expenseType, amount);
         transactions.add(transaction);
+        dataSource.addTransaction(transaction);
     }
 
     @Override

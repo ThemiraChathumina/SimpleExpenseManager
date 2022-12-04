@@ -16,6 +16,8 @@
 
 package lk.ac.mrt.cse.dbs.simpleexpensemanager.control;
 
+import android.widget.Toast;
+
 import java.io.Serializable;
 import java.util.Calendar;
 import java.util.Date;
@@ -57,7 +59,7 @@ public abstract class ExpenseManager implements Serializable {
      * @param amount
      * @throws InvalidAccountException
      */
-    public void updateAccountBalance(String accountNo, int day, int month, int year, ExpenseType expenseType,
+    public boolean updateAccountBalance(String accountNo, int day, int month, int year, ExpenseType expenseType,
                                      String amount) throws InvalidAccountException {
         Calendar calendar = Calendar.getInstance();
         calendar.set(year, month, day);
@@ -65,9 +67,15 @@ public abstract class ExpenseManager implements Serializable {
 
         if (!amount.isEmpty()) {
             double amountVal = Double.parseDouble(amount);
-            transactionsHolder.logTransaction(transactionDate, accountNo, expenseType, amountVal);
-            accountsHolder.updateBalance(accountNo, expenseType, amountVal);
+            boolean success = accountsHolder.updateBalance(accountNo, expenseType, amountVal);
+            if (success){
+                transactionsHolder.logTransaction(transactionDate, accountNo, expenseType, amountVal);
+                return true;
+            }else{
+                return false;
+            }
         }
+        return false;
     }
 
     /***

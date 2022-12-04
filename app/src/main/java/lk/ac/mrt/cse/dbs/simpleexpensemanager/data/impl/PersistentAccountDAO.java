@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import lk.ac.mrt.cse.dbs.simpleexpensemanager.control.DataSource;
 import lk.ac.mrt.cse.dbs.simpleexpensemanager.data.AccountDAO;
 import lk.ac.mrt.cse.dbs.simpleexpensemanager.data.exception.InvalidAccountException;
 import lk.ac.mrt.cse.dbs.simpleexpensemanager.data.model.Account;
@@ -30,11 +31,16 @@ import lk.ac.mrt.cse.dbs.simpleexpensemanager.data.model.ExpenseType;
  * This is an In-Memory implementation of the AccountDAO interface. This is not a persistent storage. A HashMap is
  * used to store the account details temporarily in the memory.
  */
-public class InMemoryAccountDAO implements AccountDAO {
+public class PersistentAccountDAO implements AccountDAO {
     private final Map<String, Account> accounts;
+    private final DataSource dataSource;
 
-    public InMemoryAccountDAO() {
+    public PersistentAccountDAO(DataSource dataSource) {
+        this.dataSource = dataSource;
         this.accounts = new HashMap<>();
+        for (Account account : dataSource.getAccounts()){
+            accounts.put(account.getAccountNo(), account);
+        }
     }
 
     @Override
@@ -59,6 +65,7 @@ public class InMemoryAccountDAO implements AccountDAO {
     @Override
     public void addAccount(Account account) {
         accounts.put(account.getAccountNo(), account);
+        dataSource.addAccount(account);
     }
 
     @Override
@@ -67,16 +74,20 @@ public class InMemoryAccountDAO implements AccountDAO {
             String msg = "Account " + accountNo + " is invalid.";
             throw new InvalidAccountException(msg);
         }
+        dataSource.deleteAccount(accounts.get(accountNo));
         accounts.remove(accountNo);
     }
 
     @Override
-    public void updateBalance(String accountNo, ExpenseType expenseType, double amount) throws InvalidAccountException {
+    public boolean updateBalance(String accountNo, ExpenseType expenseType, double amount) throws InvalidAccountException {
         if (!accounts.containsKey(accountNo)) {
             String msg = "Account " + accountNo + " is invalid.";
             throw new InvalidAccountException(msg);
         }
         Account account = accounts.get(accountNo);
+        if (expenseType == ExpenseType.EXPENSE && amount > account.getBalance()){
+            return false;
+        }
         // specific implementation based on the transaction type
         switch (expenseType) {
             case EXPENSE:
@@ -87,5 +98,7 @@ public class InMemoryAccountDAO implements AccountDAO {
                 break;
         }
         accounts.put(accountNo, account);
+        dataSource.updateAccount(account);
+        return true;
     }
 }
