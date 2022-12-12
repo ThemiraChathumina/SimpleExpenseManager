@@ -98,34 +98,46 @@ public class ManageExpensesFragment extends Fragment implements View.OnClickList
                 int month = datePicker.getMonth();
                 int year = datePicker.getYear();
 
-                if (amountStr.isEmpty()) {
-                    amount.setError(getActivity().getString(R.string.err_amount_required));
-                }
-
-                if (currentExpenseManager != null) {
-                    try {
-                        boolean success = currentExpenseManager.updateAccountBalance(selectedAccount, day, month, year,
-                                ExpenseType.valueOf(type.toUpperCase()), amountStr);
-                        if (!amountStr.isEmpty()){
-                            if (success){
-                                Toast.makeText(getActivity(),
-                                        "Transaction added.", Toast.LENGTH_SHORT).show();
-                            }else {
-                                Toast.makeText(getActivity(),
-                                        "Insufficient account balance.", Toast.LENGTH_SHORT).show();
+                if (selectedAccount == null){
+                    new AlertDialog.Builder(this.getActivity())
+                            .setTitle("No account is selected.")
+                            .setMessage("Please add an account.")
+                            .setNeutralButton(this.getString(R.string.msg_ok),
+                                    new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            dialog.cancel();
+                                        }
+                                    }).setIcon(android.R.drawable.ic_dialog_alert).show();
+                }else{
+                    if (amountStr.isEmpty()) {
+                        amount.setError(getActivity().getString(R.string.err_amount_required));
+                    }
+                    if (currentExpenseManager != null) {
+                        try {
+                            boolean success = currentExpenseManager.updateAccountBalance(selectedAccount, day, month, year,
+                                    ExpenseType.valueOf(type.toUpperCase()), amountStr);
+                            if (!amountStr.isEmpty()){
+                                if (success){
+                                    Toast.makeText(getActivity(),
+                                            "Transaction added.", Toast.LENGTH_SHORT).show();
+                                }else {
+                                    Toast.makeText(getActivity(),
+                                            "Insufficient account balance.", Toast.LENGTH_SHORT).show();
+                                }
                             }
+                        } catch (InvalidAccountException e) {
+                            new AlertDialog.Builder(this.getActivity())
+                                    .setTitle(this.getString(R.string.msg_account_update_unable) + selectedAccount)
+                                    .setMessage(e.getMessage())
+                                    .setNeutralButton(this.getString(R.string.msg_ok),
+                                            new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            dialog.cancel();
+                                        }
+                                    }).setIcon(android.R.drawable.ic_dialog_alert).show();
                         }
-                    } catch (InvalidAccountException e) {
-                        new AlertDialog.Builder(this.getActivity())
-                                .setTitle(this.getString(R.string.msg_account_update_unable) + selectedAccount)
-                                .setMessage(e.getMessage())
-                                .setNeutralButton(this.getString(R.string.msg_ok),
-                                        new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        dialog.cancel();
-                                    }
-                                }).setIcon(android.R.drawable.ic_dialog_alert).show();
                     }
                 }
                 amount.getText().clear();
