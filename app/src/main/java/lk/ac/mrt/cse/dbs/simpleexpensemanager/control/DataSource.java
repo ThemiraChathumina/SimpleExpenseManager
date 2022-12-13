@@ -20,9 +20,9 @@ import java.util.Objects;
 import lk.ac.mrt.cse.dbs.simpleexpensemanager.data.model.Account;
 import lk.ac.mrt.cse.dbs.simpleexpensemanager.data.model.ExpenseType;
 import lk.ac.mrt.cse.dbs.simpleexpensemanager.data.model.Transaction;
-
+// 200088D
 public class DataSource extends SQLiteOpenHelper {
-    private static final String dbName = "expenses";
+    private static final String dbName = "200088D";
     private static final int dbVersion = 1;
 
     private static final String tableNameTransaction = "transactionLog";
@@ -136,6 +136,7 @@ public class DataSource extends SQLiteOpenHelper {
                 transactions.add(transaction);
             }while (cursor.moveToNext());
         }
+        cursor.close();
         return transactions;
     }
 
@@ -154,6 +155,7 @@ public class DataSource extends SQLiteOpenHelper {
                 accounts.add(account);
             }while (cursor.moveToNext());
         }
+        cursor.close();
         return accounts;
     }
 
